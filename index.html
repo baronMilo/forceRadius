@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<a target="_blank" style="outline:none;"><canvas width="960" height="960"></canvas></a>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="forceRadius.js"></script>
+<script>
+
+var canvas = document.querySelector("canvas"),
+    context = canvas.getContext("2d"),
+    width = canvas.width,
+    height = canvas.height;
+
+var color = d3.scaleOrdinal()
+    .range(d3.schemeCategory20);
+
+var simulation = d3.forceSimulation()
+    .force("manyBody", d3.forceManyBody())
+    .force("charge", d3.forceCollide())
+    .force("circularForce", forceRadius().radius(function(d) { return d.radius; }).start(function(d) { return d.startRadian; }).end(function(d) { return d.endRadian; }))
+
+d3.json("graph.json", function(error, graph) {
+  if (error) throw error;
+
+  graph.nodes.forEach(function(d, i) {
+    d.startRadian = Math.random() * (Math.PI * 2);
+    d.endRadian = Math.random() * (Math.PI * 2);
+    d.radius = Math.random() * width * .25 + 1;
+    d.x = Math.cos(d.startRadian) * d.radius;
+    d.y = Math.sin(d.startRadian) * d.radius;
+  });
+
+  var users = d3.nest()
+      .key(function(d) { return d.user; })
+      .entries(graph.nodes)
+      .sort(function(a, b) { return b.values.length - a.values.length; });
+
+  color.domain(users.map(function(d) { return d.key; }));
+
+  simulation
+      .nodes(graph.nodes)
+      .on("tick", ticked);
+
+  function ticked() {
+    context.clearRect(0, 0, width, height);
+    context.save();
+    context.translate(width / 2, height / 2);
+
+    users.forEach(function(user) {
+      context.beginPath();
+      user.values.forEach(drawNode);
+      context.fillStyle = color(user.key);
+      context.fill();
+    });
+
+    context.restore();
+  }
+});
+
+function drawNode(d) {
+  context.moveTo(d.x + 3, d.y);
+  context.arc(d.x, d.y, 3, 0, 2 * Math.PI);
+}
+
+</script>
