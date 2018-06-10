@@ -1,34 +1,38 @@
-function forceRadius(start, end, radius) {
-  var nodes,
+function forceRadius() {
+  let nodes,
       starts,
       ends,
       radiuses;
 
+  let start = defaultFunc;
+  let end = defaultFunc;
+  let radius = defaultFunc;
+  let direction = defaultFunc;
+  
   if (typeof radius !== "function") radius = +radius;
   start = start == null ? 0 : start;
   end = end == null ? 0 : end;
 
   function force(alpha) {
-    for (var i = 0, n = nodes.length; i < n; ++i) {
-      var node = nodes[i],
-          ext = d3.extent([starts[i], ends[i]]),
-          mult = ext[1] - ext[0] <= Math.PI ? 1 : -1,
-          cx = (Math.cos(starts[i] + mult * (starts[i] - ends[i] * (1 - alpha))) * radiuses[i] - node.x) * alpha,
-          cy = (Math.sin(starts[i] + mult * (starts[i] - ends[i] * (1 - alpha))) * radiuses[i] - node.y) * alpha
+    for (let i = 0, n = nodes.length; i < n; ++i) {
+      let node = nodes[i],
+          dir = [-1, 1].indexOf(direction()) != -1 ? direction() : Math.abs(starts[i] - ends[i]) <= Math.PI ? 1 : -1,
+          cx = (Math.cos(starts[i] + (starts[i] - dir * ends[i] * (1 - alpha))) * radiuses[i] - node.x) * alpha,
+          cy = (Math.sin(starts[i] + (starts[i] - dir * ends[i] * (1 - alpha))) * radiuses[i] - node.y) * alpha
       node.vx += cx;
       node.vy += cy;
     }
   }
 
-  function defaultFunc(x) {
+  function defaultFunc(d) {
     return function() {
-      return x;
+      return d;
     };
   }
-
+  
   function initialize() {
     if (!nodes) return;
-    var i, n = nodes.length;
+    let i, n = nodes.length;
     radiuses = new Array(n);
     starts = new Array(n);
     ends = new Array(n);
@@ -41,6 +45,10 @@ function forceRadius(start, end, radius) {
 
   force.initialize = function(_) {
     nodes = _, initialize();
+  };
+
+  force.direction = function(_) {
+    return arguments.length ? (direction = typeof _ === "function" ? _ : defaultFunc(+_), initialize(), force) : direction;
   };
 
   force.radius = function(_) {
@@ -58,3 +66,4 @@ function forceRadius(start, end, radius) {
   return force;
 
 }
+
