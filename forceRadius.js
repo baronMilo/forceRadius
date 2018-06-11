@@ -2,7 +2,7 @@ function forceRadius() {
   let nodes,
       starts,
       ends,
-      radiuses;
+      radii;
 
   let start = defaultFunc;
   let end = defaultFunc;
@@ -17,8 +17,8 @@ function forceRadius() {
     for (let i = 0, n = nodes.length; i < n; ++i) {
       let node = nodes[i],
           dir = [-1, 1].indexOf(direction()) != -1 ? direction() : Math.abs(starts[i] - ends[i]) <= Math.PI ? 1 : -1,
-          cx = (Math.cos(starts[i] + (starts[i] - dir * ends[i] * (1 - alpha))) * radiuses[i] - node.x) * alpha,
-          cy = (Math.sin(starts[i] + (starts[i] - dir * ends[i] * (1 - alpha))) * radiuses[i] - node.y) * alpha
+          cx = (Math.cos(starts[i] + (starts[i] - dir * ends[i] * (1 - alpha))) * radii[i] - node.x) * alpha,
+          cy = (Math.sin(starts[i] + (starts[i] - dir * ends[i] * (1 - alpha))) * radii[i] - node.y) * alpha
       node.vx += cx;
       node.vy += cy;
     }
@@ -33,11 +33,11 @@ function forceRadius() {
   function initialize() {
     if (!nodes) return;
     let i, n = nodes.length;
-    radiuses = new Array(n);
+    radii = new Array(n);
     starts = new Array(n);
     ends = new Array(n);
     for (i = 0; i < n; ++i) {
-      radiuses[i] = +radius(nodes[i], i, nodes);
+      radii[i] = +radius(nodes[i], i, nodes);
       starts[i] = +start(nodes[i], i, nodes);
       ends[i] = +end(nodes[i], i, nodes);
     }
